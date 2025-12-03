@@ -1,0 +1,8 @@
+{
+  "BaseModEx:Config": {
+    "TEXT_DICT": {
+      "deleteModdedCharPrefs": "Delete preference files for modded characters",
+      "autoAddPreventUnlocks": "Prevent premature unlocking of custom cards"
+    }
+  }
+}

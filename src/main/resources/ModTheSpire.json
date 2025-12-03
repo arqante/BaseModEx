@@ -1,0 +1,11 @@
+{
+  "modid": "${project.artifactId}",
+  "name": "${project.name}",
+  "description": "${project.description}",
+  "version": "${project.version}",
+  "sts_version": "${sts.version}",
+  "mts_version": "${mts.version}",
+  "author_list": ["Arqante"],
+  "credits": "kiooeht",
+  "dependencies": ["basemod"]
+}
