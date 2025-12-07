@@ -21,8 +21,7 @@ import static com.megacrit.cardcrawl.core.CardCrawlGame.publisherIntegration;
  */
 @SpirePatch2(clz = SaveHelper.class, method = "deletePrefs")
 public class DeleteModdedCharPrefs {
-    private static final String PREFS_DIR = publisherIntegration.getType() != Distributor.GOG
-            && !Settings.isBeta ? "preferences" : "betaPreferences";
+    private static final String PREFS_DIR = !Settings.isBeta ? "preferences" : "betaPreferences";
 
     public static void Postfix(int slot) {
         if (!Config.deleteModdedCharPrefs) return;
@@ -33,7 +32,7 @@ public class DeleteModdedCharPrefs {
                 .forEach(fileName -> {
                     Gdx.files.local(fileName).delete();
                     Gdx.files.local(fileName + ".backUp").delete();
-                    logger.info("Deleted {}", fileName);
+                    logger.info("Deleted preference file: {}", fileName);
                 });
     }
 }

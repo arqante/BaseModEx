@@ -10,7 +10,7 @@ import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.screens.runHistory.RunHistoryScreen;
 
 /**
- * Removes colored outlines from modded relics in the Run History screen
+ * Removes colored outlines from modded class relics in the Run History screen
  * to match the relics from the base game.
  */
 public class RunHistoryRelicsFix {

@@ -31,7 +31,7 @@ public class ColoredDeckScreenBar {
         }
     }
 
-    public static class Locator extends SpireInsertLocator {
+    private static class Locator extends SpireInsertLocator {
         @Override
         public int[] Locate(CtBehavior patchTarget) throws CannotCompileException, PatchingException {
             Matcher matcher = new MethodCallMatcher(SpriteBatch.class, "draw");
