@@ -2,6 +2,7 @@ package basemod.extension.patches;
 
 import basemod.BaseMod;
 import basemod.extension.BaseModEx;
+import basemod.extension.annotations.BaseModPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch2;
 import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -15,6 +16,7 @@ import static com.megacrit.cardcrawl.core.CardCrawlGame.characterManager;
 /**
  * Prevents modded characters from being unlocked in Custom Mode if they are locked in Standard Mode.
  */
+@BaseModPatch
 @SpirePatch2(clz = BaseMod.class, method = "generateCustomCharacterOptions")
 public class CustomModeCharLockFix {
 

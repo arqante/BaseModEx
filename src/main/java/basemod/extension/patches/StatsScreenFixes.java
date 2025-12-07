@@ -4,6 +4,7 @@ import basemod.BaseMod;
 import basemod.ReflectionHacks;
 import basemod.abstracts.CustomPlayer;
 import basemod.extension.BaseModEx;
+import basemod.extension.annotations.BaseModPatch;
 import basemod.patches.com.megacrit.cardcrawl.unlock.UnlockTracker.CountModdedUnlockCards;
 import com.evacipated.cardcrawl.modthespire.lib.*;
 import com.evacipated.cardcrawl.modthespire.lib.Matcher.FieldAccessMatcher;
@@ -83,6 +84,7 @@ public class StatsScreenFixes {
      * <b><i>"Overall: Relics Discovered":</i></b>
      * <p>Relics of custom colors are now counted toward the total count.
      */
+    @BaseModPatch
     @SpirePatch2(clz = BaseMod.class, method = "addRelicToCustomPool")
     public static class OverallRelicsDiscoveredFix {
 
@@ -192,6 +194,7 @@ public class StatsScreenFixes {
      * <p>May not always work, since there is no universal agreement in the STS
      * modding community on how to format character unlock keys.
      */
+    @BaseModPatch
     @SpirePatch2(clz = CustomPlayer.class, method = "renderStatScreen")
     public static class ModdedCharStatsVisibilityFix {
         public static SpireReturn<Void> Prefix(CustomPlayer __instance) {
