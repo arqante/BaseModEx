@@ -2,6 +2,7 @@ package basemod.extension.patches;
 
 import basemod.AutoAdd;
 import basemod.BaseMod;
+import basemod.extension.annotations.BaseModPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpireConfig;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch2;
 import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
@@ -18,6 +19,7 @@ import static basemod.extension.BaseModExInit.modInfo;
  * be marked as seen but not as unlocked. The patch is enabled by default but can
  * be turned off in the mod's config menu.
  */
+@BaseModPatch
 @SpirePatch2(clz = AutoAdd.class, method = "cards")
 public class AutoAddPreventUnlocks {
 
