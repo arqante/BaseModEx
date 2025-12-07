@@ -271,8 +271,8 @@ public class BaseModEx {
             totalScore += currentCost;
             currentCost = UnlockTracker.incrementUnlockRamp(currentCost);
         }
-        int highScore = UnlockTracker.unlockProgress.getInteger(playerClass + "HighScore", 1000);
 
+        int highScore = UnlockTracker.unlockProgress.getInteger(playerClass + "HighScore", 1000);
         UnlockTracker.unlockProgress.putInteger(playerClass + "UnlockLevel", unlockLevel);
         UnlockTracker.unlockProgress.putInteger(playerClass + "Progress", 50);
         UnlockTracker.unlockProgress.putInteger(playerClass + "CurrentCost", currentCost);

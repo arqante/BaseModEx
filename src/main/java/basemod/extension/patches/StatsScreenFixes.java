@@ -70,7 +70,7 @@ public class StatsScreenFixes {
                             player.chosenClass, 0)).sum();
         }
 
-        public static class Locator extends SpireInsertLocator {
+        private static class Locator extends SpireInsertLocator {
             @Override
             public int[] Locate(CtBehavior patchTarget) throws CannotCompileException, PatchingException {
                 Matcher matcher = new FieldAccessMatcher(CharStat.class, "info2");
@@ -91,7 +91,7 @@ public class StatsScreenFixes {
             RelicLibrary.totalRelicCount++;
         }
 
-        public static class Locator extends SpireInsertLocator {
+        private static class Locator extends SpireInsertLocator {
             @Override
             public int[] Locate(CtBehavior patchTarget) throws CannotCompileException, PatchingException {
                 Matcher matcher = new MethodCallMatcher(UnlockTracker.class, "isRelicSeen");

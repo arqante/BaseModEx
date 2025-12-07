@@ -23,14 +23,14 @@ public class BaseModExInit implements PostInitializeSubscriber, EditStringsSubsc
     static {
         modInfo = Arrays.stream(Loader.MODINFOS)
                 .filter(modInfo -> modInfo.ID.equals("BaseModEx"))
-                .findFirst().orElseThrow(() -> new RuntimeException("Failed to load ModInfo."));
+                .findFirst().orElseThrow(() -> new RuntimeException("Failed to load ModInfo"));
 
         logger = LogManager.getLogger(modInfo.ID);
     }
 
     public BaseModExInit() {
         BaseMod.subscribe(this);
-        logger.info("Subscribed to BaseMod.");
+        logger.info("Subscribed to BaseMod");
     }
 
     public static void initialize() {
