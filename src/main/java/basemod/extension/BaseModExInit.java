@@ -25,7 +25,7 @@ public class BaseModExInit implements PostInitializeSubscriber, EditStringsSubsc
                 .filter(modInfo -> modInfo.ID.equals("BaseModEx"))
                 .findFirst().orElseThrow(() -> new RuntimeException("Failed to load ModInfo"));
 
-        logger = LogManager.getLogger(modInfo.ID);
+        logger = LogManager.getLogger(BaseModEx.class.getName());
     }
 
     public BaseModExInit() {
