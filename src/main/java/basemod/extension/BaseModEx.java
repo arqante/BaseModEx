@@ -11,17 +11,14 @@ import com.megacrit.cardcrawl.helpers.RelicLibrary;
 import com.megacrit.cardcrawl.unlock.AbstractUnlock;
 import com.megacrit.cardcrawl.unlock.UnlockTracker;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import static basemod.extension.BaseModExInit.logger;
 
 public class BaseModEx {
 
-    // -------------------------- CARD COLOR METHODS --------------------------
-    // ------------------------------------------------------------------------
+    // ------------------------- CARD COLOR FUNCTIONS -------------------------
     /**
      * <p>A wrapper for BaseMod's {@link BaseMod#addColor addColor} method that allows passing
      * all the arguments as a single {@link CustomColor} object. In order to create one, use the
@@ -71,7 +68,7 @@ public class BaseModEx {
         return map.get(cardColor);
     }
 
-    // --------------------------- Replace methods ----------------------------
+    // -------------------------- Replace functions ---------------------------
     /**
      * Replaces all the colors of a modded character with one shared {@link Color}.
      * @param cardColor the character's {@link AbstractCard.CardColor CardColor} enum
@@ -163,11 +160,198 @@ public class BaseModEx {
         ReflectionHacks.setPrivateStatic(BaseMod.class, type, map);
     }
     // ------------------------------------------------------------------------
-    // ------------------------------------------------------------------------
 
 
-    // ---------------------------- UNLOCK METHODS ----------------------------
-    // ------------------------------------------------------------------------
+    // --------------------------- UNLOCK FUNCTIONS ---------------------------
+    // ------------------------- Unlocking functions --------------------------
+    /**
+     * Unlocks a character and all of their unlock bundles. Additionally, sets
+     * the character's unlock progress to level their max level (usually 5).
+     * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
+     */
+    public static void unlockAllFor(AbstractPlayer.PlayerClass playerClass) {
+        unlockCharacter(playerClass);
+        unlockAllBundles(playerClass);
+    }
+
+    /**
+     * Unlocks either a card, a relic, or a character via their unlock key.
+     * @param unlockKey a {@link String} containing an unlock key
+     * @param unlockType the type of unlock
+     */
+    public static void unlockByType(String unlockKey, AbstractUnlock.UnlockType unlockType) {
+        if (unlockType == AbstractUnlock.UnlockType.CARD) {
+            unlockCard(unlockKey);
+        } else if (unlockType == AbstractUnlock.UnlockType.RELIC) {
+            unlockRelic(unlockKey);
+        } else if (unlockType == AbstractUnlock.UnlockType.CHARACTER) {
+            unlockCharacter(unlockKey);
+        } else {
+            throw new IllegalArgumentException("Unsupported unlock type: " + unlockType);
+        }
+    }
+
+    /**
+     * Unlocks a character. This method is similar to {@link UnlockTracker#hardUnlockOverride}
+     * but also removes the character from the {@code lockedCharacters} list.
+     * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
+     */
+    public static void unlockCharacter(AbstractPlayer.PlayerClass playerClass) {
+        unlockCharacter(convertToUnlockKey(playerClass));
+        logger.info("Unlocked character: {}", playerClass);
+    }
+
+    /**
+     * Unlocks a character. This method is similar to {@link UnlockTracker#hardUnlockOverride}
+     * but also removes the character from the {@code lockedCharacters} list.
+     * @param unlockKey a {@link String} containing a character unlock key
+     */
+    public static void unlockCharacter(String unlockKey) {
+        UnlockTracker.lockedCharacters.remove(unlockKey);
+        UnlockTracker.unlockPref.putInteger(unlockKey, 2);
+        UnlockTracker.unlockPref.flush();
+    }
+
+    /**
+     * Unlocks all unlock bundles of a character and marks their contents as seen.
+     * Additionally, sets the character's unlock progress to their max level (usually 5).
+     * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
+     */
+    public static void unlockAllBundles(AbstractPlayer.PlayerClass playerClass) {
+        for (int i = 0; i < getMaxUnlockLevel(playerClass); i++) {
+            unlockBundle(playerClass, i);
+        }
+        setUnlockProgressToMax(playerClass);
+        logger.info("Unlocked all bundles for: {}", playerClass);
+    }
+
+    /**
+     * Unlocks a character's unlock bundle and marks its contents as seen.
+     * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
+     * @param unlockLevel the level of the bundle to be unlocked
+     */
+    public static void unlockBundle(AbstractPlayer.PlayerClass playerClass, int unlockLevel) {
+        getUnlocks(playerClass, unlockLevel).forEach(BaseModEx::unlockByType);
+    }
+
+    /**
+     * Unlocks a card and marks it as seen. This method is basically
+     * a wrapper around {@link UnlockTracker#unlockCard}.
+     * @param unlockKey a {@link String} containing a card unlock key
+     */
+    public static void unlockCard(String unlockKey) {
+        UnlockTracker.unlockCard(unlockKey);
+    }
+
+    /**
+     * Unlocks a relic and marks it as seen. This method combines
+     * {@link UnlockTracker#hardUnlockOverride hardUnlockOverride}
+     * with {@link UnlockTracker#markRelicAsSeen markRelicAsSeen}
+     * but without any checks and console messages.
+     * @param unlockKey a {@link String} containing a relic unlock key
+     */
+    public static void unlockRelic(String unlockKey) {
+        UnlockTracker.unlockPref.putInteger(unlockKey, 2);
+        UnlockTracker.unlockPref.flush();
+        UnlockTracker.relicSeenPref.putInteger(unlockKey, 1);
+        UnlockTracker.relicSeenPref.flush();
+        RelicLibrary.getRelic(unlockKey).isSeen = true;
+    }
+
+    // -------------------------- Locking functions ---------------------------
+    /**
+     * Locks a character and all of their unlock bundles. Additionally, resets
+     * the character's unlock progress to 0.
+     * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
+     */
+    public static void lockAllFor(AbstractPlayer.PlayerClass playerClass) {
+        lockCharacter(playerClass);
+        lockAllBundles(playerClass);
+    }
+
+    /**
+     * Locks either a card, a relic, or a character via their unlock key.
+     * @param unlockKey a {@link String} containing an unlock key
+     * @param unlockType the type of unlock
+     */
+    public static void lockByType(String unlockKey, AbstractUnlock.UnlockType unlockType) {
+        if (unlockType == AbstractUnlock.UnlockType.CARD) {
+            lockCard(unlockKey);
+        } else if (unlockType == AbstractUnlock.UnlockType.RELIC) {
+            lockRelic(unlockKey);
+        } else if (unlockType == AbstractUnlock.UnlockType.CHARACTER) {
+            lockCharacter(unlockKey);
+        } else {
+            throw new IllegalArgumentException("Unsupported unlock type: " + unlockType);
+        }
+    }
+
+    /**
+     * Locks a character unconditionally. This method allows to relock a once unlocked character.
+     * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
+     */
+    public static void lockCharacter(AbstractPlayer.PlayerClass playerClass) {
+        lockCharacter(convertToUnlockKey(playerClass));
+        logger.info("Locked character: {}", playerClass);
+    }
+
+    /**
+     * Locks a character unconditionally. This method allows to relock a once unlocked character.
+     * @param unlockKey a {@link String} containing a character unlock key
+     */
+    public static void lockCharacter(String unlockKey) {
+        UnlockTracker.lockedCharacters.add(unlockKey);
+        UnlockTracker.unlockPref.data.remove(unlockKey);
+        UnlockTracker.unlockPref.flush();
+    }
+
+    /**
+     * Locks all unlock bundles of a character and marks their contents as unseen.
+     * Additionally, resets the character's unlock progress to 0.
+     * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
+     */
+    public static void lockAllBundles(AbstractPlayer.PlayerClass playerClass) {
+        for (int i = 0; i < getMaxUnlockLevel(playerClass); i++) {
+            lockBundle(playerClass, i);
+        }
+        UnlockTracker.resetUnlockProgress(playerClass);
+        logger.info("Locked all bundles for: {}", playerClass);
+    }
+
+    /**
+     * Locks a character's unlock bundle and marks its contents as unseen.
+     * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
+     * @param unlockLevel the level of the bundle to be locked
+     */
+    public static void lockBundle(AbstractPlayer.PlayerClass playerClass, int unlockLevel) {
+        getUnlocks(playerClass, unlockLevel).forEach(BaseModEx::lockByType);
+    }
+
+    /**
+     * Locks a card and marks it as unseen.
+     * @param unlockKey a {@link String} containing a card unlock key
+     */
+    public static void lockCard(String unlockKey) {
+        UnlockTracker.lockedCards.add(unlockKey);
+        UnlockTracker.unlockPref.data.remove(unlockKey);
+        UnlockTracker.seenPref.data.remove(unlockKey);
+        UnlockTracker.unlockPref.flush();
+        UnlockTracker.seenPref.flush();
+    }
+
+    /**
+     * Locks a relic and marks it as unseen.
+     * @param unlockKey a {@link String} containing a relic unlock key
+     */
+    public static void lockRelic(String unlockKey) {
+        UnlockTracker.lockedRelics.add(unlockKey);
+        UnlockTracker.unlockPref.data.remove(unlockKey);
+        UnlockTracker.relicSeenPref.data.remove(unlockKey);
+        UnlockTracker.unlockPref.flush();
+        UnlockTracker.relicSeenPref.flush();
+    }
+
+    // ------------------------- Auxiliary functions --------------------------
     /**
      * <p>Converts a character's {@link AbstractPlayer.PlayerClass PlayerClass}
      * enum to their character unlock key.
@@ -183,14 +367,38 @@ public class BaseModEx {
     public static String convertToUnlockKey(AbstractPlayer.PlayerClass playerClass) {
         if (playerClass == AbstractPlayer.PlayerClass.THE_SILENT) return "The Silent";
 
-        String key = playerClass.toString().toLowerCase();
-        key = key.startsWith("the_") ? key.substring(4) : key;
-        return key.substring(0, 1).toUpperCase() + key.substring(1);
+        String name = playerClass.toString().toLowerCase();
+        name = name.startsWith("the_") ? name.substring(4) : name;
+        return name.substring(0, 1).toUpperCase() + name.substring(1);
     }
 
     /**
-     * Same as {@link BaseMod#getMaxUnlockLevel(AbstractPlayer.PlayerClass) BaseMod.getMaxUnlockLevel}
-     * but returns 5 for the base game characters.
+     * Returns the contents of a character's unlock bundle as a {@link Map}.
+     * Each entry represents a mapping between a {@link String} unlock key
+     * and an unlock type (either a card or a relic unlock).
+     * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
+     * @param unlockLevel the level of the unlock bundle
+     * @return a {@link Map} containing unlock keys and unlock types
+     */
+    public static Map<String, AbstractUnlock.UnlockType> getUnlocks(
+            AbstractPlayer.PlayerClass playerClass, int unlockLevel) {
+        Map<String, AbstractUnlock.UnlockType> unlocks = new HashMap<>();
+
+        if (isModdedCharacter(playerClass)) {
+            CustomUnlockBundle bundle = BaseMod.getUnlockBundleFor(playerClass, unlockLevel);
+            for (String unlockKey : bundle.getUnlockIDs()) {
+                unlocks.put(unlockKey, bundle.unlockType);
+            }
+        } else {
+            for (AbstractUnlock unlock : UnlockTracker.getUnlockBundle(playerClass, unlockLevel)) {
+                unlocks.put(unlock.key, unlock.type);
+            }
+        }
+        return unlocks;
+    }
+
+    /**
+     * Same as {@link BaseMod#getMaxUnlockLevel} but returns 5 for the base game characters.
      * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
      * @return the character's max unlock level
      */
@@ -199,73 +407,14 @@ public class BaseModEx {
         return BaseMod.getMaxUnlockLevel(playerClass);
     }
 
-    // -------- Unlocking methods that require a PlayerClass parameter --------
-    /**
-     * Unlocks a character and all of their unlock bundles. Additionally, sets
-     * the character's unlock progress to level their max level (usually 5).
-     * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
-     */
-    public static void unlockAllFor(AbstractPlayer.PlayerClass playerClass) {
-        unlockCharacter(playerClass);
-        unlockAllBundles(playerClass);
-    }
-
-    /**
-     * Unlocks a character. This method is similar to {@link UnlockTracker#hardUnlockOverride};
-     * however, it also removes the character from the {@code lockedCharacters} list.
-     * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
-     */
-    public static void unlockCharacter(AbstractPlayer.PlayerClass playerClass) {
-        String unlockKey = BaseModEx.convertToUnlockKey(playerClass);
-        UnlockTracker.lockedCharacters.remove(unlockKey);
-        UnlockTracker.unlockPref.putInteger(unlockKey, 2);
-        UnlockTracker.unlockPref.flush();
-        logger.info("Unlocked character: {}", playerClass);
-    }
-
-    /**
-     * Unlocks all unlock bundles of a character and marks their contents as seen.
-     * Additionally, sets the character's unlock progress to their max level (usually 5).
-     * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
-     */
-    public static void unlockAllBundles(AbstractPlayer.PlayerClass playerClass) {
-        for (int i = 0; i < BaseModEx.getMaxUnlockLevel(playerClass); i++) {
-            BaseModEx.unlockBundle(playerClass, i);
-        }
-        maxUnlockProgress(playerClass);
-        logger.info("Unlocked all bundles for: {}", playerClass);
-    }
-
-    /**
-     * Unlocks a character's unlock bundle and marks its contents as seen.
-     * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
-     * @param unlockLevel the level of the bundle to be unlocked
-     */
-    public static void unlockBundle(AbstractPlayer.PlayerClass playerClass, int unlockLevel) {
-        AbstractUnlock.UnlockType unlockType;
-        List<String> unlockKeys;
-
-        if (isModdedCharacter(playerClass)) {
-            CustomUnlockBundle bundle = BaseMod.getUnlockBundleFor(playerClass, unlockLevel);
-            unlockType = bundle.unlockType;
-            unlockKeys = bundle.getUnlockIDs();
-        } else {
-            ArrayList<AbstractUnlock> bundle = UnlockTracker.getUnlockBundle(playerClass, unlockLevel);
-            unlockType = bundle.stream().findFirst().orElse(new AbstractUnlock()).type;
-            unlockKeys = bundle.stream().map(unlock -> unlock.key).collect(Collectors.toList());
-        }
-
-        unlockKeys.forEach(unlockKey -> BaseModEx.unlockByType(unlockKey, unlockType));
-    }
-
     /**
      * Sets a character's unlock progress to their max level (usually 5).
      * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
      */
-    public static void maxUnlockProgress(AbstractPlayer.PlayerClass playerClass) {
+    public static void setUnlockProgressToMax(AbstractPlayer.PlayerClass playerClass) {
         int totalScore = 50;
         int currentCost = 300;
-        int unlockLevel = BaseModEx.getMaxUnlockLevel(playerClass);
+        int unlockLevel = getMaxUnlockLevel(playerClass);
 
         for (int i = 0; i < unlockLevel; i++) {
             totalScore += currentCost;
@@ -280,45 +429,10 @@ public class BaseModEx {
         UnlockTracker.unlockProgress.putInteger(playerClass + "HighScore", highScore);
         UnlockTracker.unlockProgress.flush();
     }
-
-    // ---------- Unlocking methods that require a String parameter -----------
-    /**
-     * Unlocks either a card, a relic, or a character by their string key.
-     * @param key a {@link String} containing an unlock key
-     * @param type the type of unlock
-     */
-    public static void unlockByType(String key, AbstractUnlock.UnlockType type) {
-        if (type == AbstractUnlock.UnlockType.CARD) {
-            UnlockTracker.unlockCard(key);
-        } else if (type == AbstractUnlock.UnlockType.RELIC) {
-            BaseModEx.unlockRelic(key);
-        } else if (type == AbstractUnlock.UnlockType.CHARACTER) {
-            UnlockTracker.hardUnlockOverride(key);
-        } else {
-            logger.info("Unsupported unlock type: {}", type);
-        }
-    }
-
-    /**
-     * Unlocks a relic by its string key and marks it as seen. This method is basically
-     * a combination of {@link UnlockTracker#hardUnlockOverride hardUnlockOverride} and
-     * {@link UnlockTracker#markRelicAsSeen markRelicAsSeen} but with no checks and
-     * console messages.
-     * @param key a {@link String} containing a relic unlock key
-     */
-    public static void unlockRelic(String key) {
-        UnlockTracker.unlockPref.putInteger(key, 2);
-        UnlockTracker.unlockPref.flush();
-        UnlockTracker.relicSeenPref.putInteger(key, 1);
-        UnlockTracker.relicSeenPref.flush();
-        RelicLibrary.getRelic(key).isSeen = true;
-    }
-    // ------------------------------------------------------------------------
     // ------------------------------------------------------------------------
 
 
-    // -------------------------- CHARACTER METHODS ---------------------------
-    // ------------------------------------------------------------------------
+    // ------------------------- CHARACTER FUNCTIONS --------------------------
     /**
      * A method of checking if a character is a modded one that is less
      * prone to {@link NullPointerException}.
@@ -338,9 +452,9 @@ public class BaseModEx {
     }
 
     /**
-     * Finds a modded character by their {@link AbstractPlayer.PlayerClass PlayerClass} enum. This method is
-     * similar to BaseMod's {@link BaseMod#findCharacter(AbstractPlayer.PlayerClass) findCharacter} method
-     * but returns a {@link CustomPlayer} object instead.
+     * Finds a modded character by their {@link AbstractPlayer.PlayerClass PlayerClass} enum.
+     * This method is similar to BaseMod's {@link BaseMod#findCharacter} method but returns
+     * a {@link CustomPlayer} object instead.
      * @param playerClass the character's {@link AbstractPlayer.PlayerClass PlayerClass} enum
      * @return a {@link CustomPlayer} object, or {@code null} if no character could be found
      */
@@ -349,6 +463,4 @@ public class BaseModEx {
                 .filter(player -> player.chosenClass == playerClass)
                 .findFirst().orElse(null);
     }
-    // ------------------------------------------------------------------------
-    // ------------------------------------------------------------------------
 }
