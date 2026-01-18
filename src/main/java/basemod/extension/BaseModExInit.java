@@ -20,6 +20,7 @@ import java.util.Arrays;
 public class BaseModExInit implements PostInitializeSubscriber, EditStringsSubscriber {
     public static final ModInfo modInfo;
     public static final Logger logger;
+    public static Texture modBar;
 
     static {
         modInfo = Arrays.stream(Loader.MODINFOS)
@@ -40,6 +41,7 @@ public class BaseModExInit implements PostInitializeSubscriber, EditStringsSubsc
 
     @Override
     public void receivePostInitialize() {
+        modBar = ImageMaster.loadImage("basemod/extension/images/ModBar.png");
         Texture badge = ImageMaster.loadImage("basemod/extension/images/ModBadge.png");
         BaseMod.registerModBadge(badge, modInfo.Name, Arrays.toString(modInfo.Authors),
                 modInfo.Description, new Config());
