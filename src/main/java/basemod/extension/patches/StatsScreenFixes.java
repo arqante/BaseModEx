@@ -75,7 +75,7 @@ public class StatsScreenFixes {
             @Override
             public int[] Locate(CtBehavior patchTarget) throws CannotCompileException, PatchingException {
                 Matcher matcher = new FieldAccessMatcher(CharStat.class, "info2");
-                return new int[] { LineFinder.findAllInOrder(patchTarget, matcher)[1] };
+                return new int[] {LineFinder.findAllInOrder(patchTarget, matcher)[1]};
             }
         }
     }

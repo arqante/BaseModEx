@@ -9,6 +9,7 @@ import com.evacipated.cardcrawl.modthespire.Loader;
 import com.evacipated.cardcrawl.modthespire.ModInfo;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInitializer;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
+import com.megacrit.cardcrawl.helpers.ImageMaster;
 import com.megacrit.cardcrawl.localization.UIStrings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,8 +40,7 @@ public class BaseModExInit implements PostInitializeSubscriber, EditStringsSubsc
 
     @Override
     public void receivePostInitialize() {
-        Texture badge = new Texture("basemod/extension/images/ModBadge.png");
-        badge.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        Texture badge = ImageMaster.loadImage("basemod/extension/images/ModBadge.png");
         BaseMod.registerModBadge(badge, modInfo.Name, Arrays.toString(modInfo.Authors),
                 modInfo.Description, new Config());
     }

@@ -32,7 +32,7 @@ public class SubscribeHooks {
     }
 
     @BaseModPatch
-    @SpirePatch2(clz = BaseMod.class, method = "subscribe", paramtypez = { ISubscriber.class, Class.class })
+    @SpirePatch2(clz = BaseMod.class, method = "subscribe", paramtypez = {ISubscriber.class, Class.class})
     public static class SubscribeOne {
         public static SpireReturn<Void> Prefix(ISubscriber sub, Class<? extends ISubscriber> additionClass) {
             if (additionClass.equals(PostReloadPrefsSubscriber.class)) {
@@ -54,7 +54,7 @@ public class SubscribeHooks {
     }
 
     @BaseModPatch
-    @SpirePatch2(clz = BaseMod.class, method = "unsubscribe", paramtypez = { ISubscriber.class, Class.class })
+    @SpirePatch2(clz = BaseMod.class, method = "unsubscribe", paramtypez = {ISubscriber.class, Class.class})
     public static class UnsubscribeOne {
         public static SpireReturn<Void> Prefix(ISubscriber sub, Class<? extends ISubscriber> removalClass) {
             if (removalClass.equals(PostReloadPrefsSubscriber.class)) {
