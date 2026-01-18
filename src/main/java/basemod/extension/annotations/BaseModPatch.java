@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A mark for {@link SpirePatch @SpirePatch} patches that modify classes from BaseMod.
+ * A marker for {@link SpirePatch @SpirePatch} patches that modify classes from BaseMod.
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
